@@ -1,0 +1,36 @@
+[package]
+authors = ["Toby <toby@tobot.dev>"]
+name = "advent-of-code-2024"
+version = "24.0.0"
+edition = "2021"
+default-run = "get_input"
+
+[profile.release]
+strip = "symbols"
+lto = true
+opt-level = 3
+codegen-units = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+codegen-units = 1
+[profile.release.package."*"]
+opt-level = 3
+codegen-units = 1
+[profile.release.build-override]
+codegen-units = 1
+
+[[bin]]
+name = "get_input"
+path = "src/get_input.rs"
+test = false
+
+[[bin]]
+name = "template"
+# day00 for alphabetic sorting
+path = "src/day00/main.rs"
+test = false
+
+[dependencies]
+reqwest = { version = "0.12.9", features = ["blocking"] }
+
