@@ -1,5 +1,5 @@
 import * as fs from "fs";
-const input = fs.readFileSync("input");
+const input = fs.readFileSync("input").toString();
 
 async function main() {}
 
