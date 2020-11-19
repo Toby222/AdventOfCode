@@ -1,0 +1,1 @@
+// Same as solution_a but with input 2 instead of 1
