@@ -3,4 +3,4 @@ const input = fs.readFileSync("input");
 
 async function main() {}
 
-main().then(console.log);
+main().then(console.log).catch(console.error);
