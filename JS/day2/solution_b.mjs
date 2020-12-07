@@ -3,7 +3,7 @@ import * as fs from "fs";
 const ENTRY_REGEX = /^(\d+?)-(\d+?) (\w?): (\w+)$/;
 
 /**
- * Main function for Puzzle A
+ * Main function for Puzzle B
  *
  * @param {string} data Puzzle input as a single string.
  * @returns {number} Amount of valid passwords in puzzle input.

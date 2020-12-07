@@ -31,7 +31,7 @@ class Grid {
 }
 
 /**
- * Main function for Puzzle A
+ * Main function for Puzzle B
  *
  * @param {string} data - Puzzle input as a single string.
  * @returns {number} The number of trees on all slopes, multiplied.

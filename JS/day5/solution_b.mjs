@@ -1,7 +1,7 @@
 import fs from "fs";
 
 /**
- * Main function for Puzzle A
+ * Main function for Puzzle B
  *
  * @param {string} data - Puzzle input as a single string.
  * @returns {number[]} List of Seat IDs missing from the puzzle input, ignoring the missing front and back seats.

@@ -13,7 +13,7 @@ const REQUIRED_FIELDS = {
 };
 
 /**
- * Main function for Puzzle A
+ * Main function for Puzzle B
  *
  * @param {string} data - Puzzle input as a single string.
  */
