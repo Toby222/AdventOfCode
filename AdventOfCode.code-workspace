@@ -4,5 +4,8 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"editor.wordBasedSuggestions": false,
+		"javascript.suggest.names": false
+	}
 }
