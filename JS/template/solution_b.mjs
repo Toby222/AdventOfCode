@@ -10,12 +10,12 @@ async function main(data) {
 }
 
 fs.readFile("input", (err, data) => {
-  console.time("Part 2");
   if (err) throw err;
+  console.time("Part 2");
   main(data.toString())
     .then((...args) => {
-      console.log(...args);
       console.timeEnd("Part 2");
+      console.log(...args);
     })
     .catch(console.error);
 });
