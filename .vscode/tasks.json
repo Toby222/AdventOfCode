@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Run build script",
+			"command": "./build-all.ps1",
+			"options": {
+				"cwd": "${workspaceFolder}/c/"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+		}
+	]
+}
