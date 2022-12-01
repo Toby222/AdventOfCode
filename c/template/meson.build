@@ -1,0 +1,1 @@
+executable('day00', ['aoc.h', 'main.c', 'part1.c', 'part2.c'])
