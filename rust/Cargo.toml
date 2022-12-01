@@ -1,6 +1,6 @@
 [package]
 name = "advent-of-code"
-version = "22.0.2"
+version = "22.1.2"
 edition = "2021"
 resolver = "2"
 
@@ -26,3 +26,7 @@ codegen-units = 1
 [[bin]]
 name = "day00"
 path = "src/day00/main.rs"
+
+[[bin]]
+name = "day01"
+path = "src/day01/main.rs"
