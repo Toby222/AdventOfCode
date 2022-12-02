@@ -125,11 +125,12 @@ impl FromStr for GameResult {
 
 fn parse_input_part_1() -> Vec<[Shape; 2]> {
     INPUT
-        .split('\n')
+        .lines()
         .map(|round_string| {
             let round = round_string
                 .split(' ')
                 .map(|play| {
+                    assert_eq!(play.len(), 1, "play: {play}");
                     Shape::from_str(play).unwrap_or_else(|_| panic!("Found invalid play {play}"))
                 })
                 .take(2)
@@ -141,10 +142,12 @@ fn parse_input_part_1() -> Vec<[Shape; 2]> {
 
 fn parse_input_part_2() -> Vec<(Shape, GameResult)> {
     INPUT
-        .split('\n')
+        .lines()
         .map(|round_string| {
             let round = round_string.split(' ').take(2).collect::<Vec<_>>();
             assert_eq!(round.len(), 2);
+            assert_eq!(round[0].len(), 1);
+            assert_eq!(round[1].len(), 1);
             let enemy_shape = Shape::from_str(round[0])
                 .unwrap_or_else(|_| panic!("Found invalid play {}", round[0]));
             let desired_result = GameResult::from_str(round[1])
