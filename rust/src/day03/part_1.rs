@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-pub(crate) fn part_1(input: &'static str) {
+pub(crate) fn part_1(input: &'static str) -> u64 {
     let rucksacks = input.lines();
     let compartments = rucksacks.map(|rucksack| {
         let compartment_size = rucksack.len() / 2;
@@ -33,4 +33,10 @@ pub(crate) fn part_1(input: &'static str) {
         running_sum += crate::character_priority(*same_bytes[0]);
     }
     println!("Part 1: {running_sum}");
+    running_sum
+}
+
+#[test]
+fn test_with_solution() {
+    assert_eq!(part_1(crate::INPUT), 7742);
 }

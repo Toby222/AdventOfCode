@@ -1,9 +1,9 @@
-pub(crate) fn part_2(input: &'static str) {
+pub(crate) fn part_2(input: &str) -> u32 {
     let mut calories = input
         .split("\n\n")
         .map(|inventory| {
             inventory
-                .split('\n')
+                .lines()
                 .map(|item| {
                     item.parse::<u32>()
                         .expect("Input isn't clean. Non-number found")
@@ -16,4 +16,10 @@ pub(crate) fn part_2(input: &'static str) {
     let top_three = calories.iter().take(3).sum::<u32>();
 
     println!("Part 2: {top_three}");
+    top_three
+}
+
+#[test]
+fn test_with_solution() {
+    assert_eq!(part_2(&crate::INPUT.replace("\r\n", "\n")), 206152);
 }

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::character_priority;
 
-pub(crate) fn part_2(input: &'static str) {
+pub(crate) fn part_2(input: &'static str) -> u64 {
     let rucksacks = input.lines();
     let compartments = rucksacks
         .map(|rucksack| rucksack.bytes().collect::<HashSet<_>>())
@@ -20,4 +20,10 @@ pub(crate) fn part_2(input: &'static str) {
         running_sum += character_priority(group_bytes[0]);
     }
     println!("Part 2: {running_sum}");
+    running_sum
+}
+
+#[test]
+fn test_with_solution() {
+    assert_eq!(part_2(crate::INPUT), 2276);
 }
