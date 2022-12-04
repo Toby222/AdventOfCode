@@ -159,6 +159,6 @@ fn parse_input_part_2() -> Vec<(Shape, GameResult)> {
 }
 
 pub fn main() {
-    part_1(parse_input_part_1().as_slice());
-    part_2(parse_input_part_2().as_slice());
+    part_1(&parse_input_part_1());
+    part_2(&parse_input_part_2());
 }
