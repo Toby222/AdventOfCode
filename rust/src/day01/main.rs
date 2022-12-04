@@ -6,8 +6,6 @@ mod part_2;
 use part_2::part_2;
 
 pub fn main() {
-    let input = INPUT.replace("\r\n", "\n");
-
-    part_1(&input);
-    part_2(&input);
+    part_1(INPUT);
+    part_2(INPUT);
 }

@@ -1,5 +1,6 @@
 pub(crate) fn part_2(input: &str) -> u32 {
     let mut calories = input
+        .replace("\r\n", "\n")
         .split("\n\n")
         .map(|inventory| {
             inventory
@@ -19,7 +20,16 @@ pub(crate) fn part_2(input: &str) -> u32 {
     top_three
 }
 
-#[test]
-fn test_with_solution() {
-    assert_eq!(part_2(&crate::INPUT.replace("\r\n", "\n")), 206152);
+#[cfg(test)]
+mod tests {
+    const SAMPLE_INPUT: &str = include_str!("sample_input.txt");
+    #[test]
+    fn test_with_solution() {
+        assert_eq!(super::part_2(&crate::INPUT.replace("\r\n", "\n")), 206152);
+    }
+
+    #[test]
+    fn test_with_sample_solution() {
+        assert_eq!(super::part_2(&SAMPLE_INPUT.replace("\r\n", "\n")), 45000);
+    }
 }

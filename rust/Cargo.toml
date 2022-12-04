@@ -24,10 +24,6 @@ opt-level = 3
 codegen-units = 1
 
 [[bin]]
-name = "day00"
-path = "src/day00/main.rs"
-
-[[bin]]
 name = "day01"
 path = "src/day01/main.rs"
 

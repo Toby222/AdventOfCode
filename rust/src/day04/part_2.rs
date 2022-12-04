@@ -18,32 +18,43 @@ pub(crate) fn part_2(input: &[[[u32; 2]; 2]]) -> usize {
     times_overlapped
 }
 
-#[test]
-fn test_overlap() {
-    for num in 0..=1024u32 {
-        assert!(sections_overlap([[num, num], [num, num]]));
+#[cfg(test)]
+mod tests {
+    const SAMPLE_INPUT: &str = include_str!("sample_input.txt");
+
+    #[test]
+    fn test_with_solution() {
+        assert_eq!(super::part_2(&crate::parse_input(crate::INPUT)), 933);
     }
 
-    for num_a in 0..=1024u32 {
-        for num_b in num_a..=1024u32 {
-            assert!(
-                sections_overlap([[num_a, num_b], [num_b, num_b]]),
-                "{:?}",
-                [[num_a, num_b], [num_b, num_b]]
-            );
-            assert!(sections_overlap([[num_a, num_b], [num_a, num_b]]));
+    #[test]
+    fn test_with_sample_solution() {
+        assert_eq!(super::part_2(&crate::parse_input(SAMPLE_INPUT)), 4);
+    }
+
+    #[test]
+    #[ignore = "Sanity check test"]
+    fn test_overlap() {
+        for num in 0..=1024u32 {
+            assert!(super::sections_overlap([[num, num], [num, num]]));
         }
-    }
 
-    for num_a in 0..=1024u32 {
-        for num_b in num_a + 1u32..=num_a + 1024u32 {
-            assert!(!sections_overlap([[num_a, num_a], [num_b, num_b]]));
+        for num_a in 0..=1024u32 {
+            for num_b in num_a..=1024u32 {
+                assert!(
+                    super::sections_overlap([[num_a, num_b], [num_b, num_b]]),
+                    "{:?}",
+                    [[num_a, num_b], [num_b, num_b]]
+                );
+                assert!(super::sections_overlap([[num_a, num_b], [num_a, num_b]]));
+            }
         }
-    }
-    assert!(sections_overlap([[1, 3], [3, 83]]));
-}
 
-#[test]
-fn test_with_solution() {
-    assert_eq!(part_2(&crate::parse_input()), 933);
+        for num_a in 0..=1024u32 {
+            for num_b in num_a + 1u32..=num_a + 1024u32 {
+                assert!(!super::sections_overlap([[num_a, num_a], [num_b, num_b]]));
+            }
+        }
+        assert!(super::sections_overlap([[1, 3], [3, 83]]));
+    }
 }

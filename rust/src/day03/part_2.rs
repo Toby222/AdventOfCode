@@ -23,7 +23,17 @@ pub(crate) fn part_2(input: &'static str) -> u64 {
     running_sum
 }
 
-#[test]
-fn test_with_solution() {
-    assert_eq!(part_2(crate::INPUT), 2276);
+#[cfg(test)]
+mod tests {
+    const SAMPLE_INPUT: &str = include_str!("sample_input.txt");
+
+    #[test]
+    fn test_with_solution() {
+        assert_eq!(super::part_2(crate::INPUT), 2276);
+    }
+
+    #[test]
+    fn test_with_sample_solution() {
+        assert_eq!(super::part_2(SAMPLE_INPUT), 70);
+    }
 }
