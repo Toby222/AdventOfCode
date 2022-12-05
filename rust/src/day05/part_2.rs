@@ -1,5 +1,5 @@
 pub(crate) fn part_2(input: crate::ChallengeInput) -> String {
-    let mut state = input.initial_state.clone();
+    let mut state = input.initial_state;
 
     for crate::Instruction {
         origin,
