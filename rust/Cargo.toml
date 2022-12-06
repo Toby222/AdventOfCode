@@ -1,6 +1,6 @@
 [package]
 name = "advent-of-code"
-version = "22.5.2"
+version = "22.6.2"
 edition = "2021"
 resolver = "2"
 
@@ -42,3 +42,7 @@ path = "src/day04/main.rs"
 [[bin]]
 name = "day05"
 path = "src/day05/main.rs"
+
+[[bin]]
+name = "day06"
+path = "src/day06/main.rs"
