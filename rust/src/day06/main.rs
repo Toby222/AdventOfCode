@@ -12,6 +12,12 @@ mod part_2;
 mod solutions;
 
 pub fn main() {
-    println!("Part 1: {}", solve_vertesians_nodeps_const::<4>(INPUT));
-    println!("Part 2: {}", solve_vertesians_nodeps_const::<14>(INPUT));
+    println!(
+        "Part 1: {}",
+        solve_nicopap_vertesians_nodeps_const::<4>(INPUT)
+    );
+    println!(
+        "Part 2: {}",
+        solve_nicopap_vertesians_nodeps_const::<14>(INPUT)
+    );
 }

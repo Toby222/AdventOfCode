@@ -287,23 +287,46 @@ mod tests {
     }
 
     #[bench]
-    fn bench_vertesians_nodeps_const(bencher: &mut test::Bencher) {
-        bencher.iter(|| solve_vertesians_nodeps_const::<WINDOW_SIZE>(crate::INPUT));
+    fn bench_nicopap_vertesians_nodeps_const(bencher: &mut test::Bencher) {
+        bencher.iter(|| solve_nicopap_vertesians_nodeps_const::<WINDOW_SIZE>(crate::INPUT));
     }
 
     #[test]
-    fn test_vertesians_nodeps_const_with_solution() {
+    fn test_nicopap_vertesians_nodeps_const_with_solution() {
         assert_eq!(
-            solve_vertesians_nodeps_const::<WINDOW_SIZE>(crate::INPUT),
+            solve_nicopap_vertesians_nodeps_const::<WINDOW_SIZE>(crate::INPUT),
             3708
         )
     }
 
     #[test]
-    fn test_vertesians_nodeps_const_with_sample_solutions() {
+    fn test_nicopap_vertesians_nodeps_const_with_sample_solutions() {
         for (sample_input, sample_answer) in SAMPLES {
             assert_eq!(
-                solve_vertesians_nodeps_const::<WINDOW_SIZE>(sample_input),
+                solve_nicopap_vertesians_nodeps_const::<WINDOW_SIZE>(sample_input),
+                sample_answer
+            )
+        }
+    }
+
+    #[bench]
+    fn bench_vertesians_3_1(bencher: &mut test::Bencher) {
+        bencher.iter(|| solve_vertesians_nodeps_3_1::<WINDOW_SIZE>(crate::INPUT));
+    }
+
+    #[test]
+    fn test_vertesians_3_1_with_solution() {
+        assert_eq!(
+            solve_vertesians_nodeps_3_1::<WINDOW_SIZE>(crate::INPUT),
+            3708
+        )
+    }
+
+    #[test]
+    fn test_vertesians_3_1_with_sample_solutions() {
+        for (sample_input, sample_answer) in SAMPLES {
+            assert_eq!(
+                solve_vertesians_nodeps_3_1::<WINDOW_SIZE>(sample_input),
                 sample_answer
             )
         }

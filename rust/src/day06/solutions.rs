@@ -482,17 +482,17 @@ mod vertesians_nodeps_improved {
     }
 }
 
-pub const fn solve_vertesians_nodeps_const<const N: usize>(input: &'static str) -> usize {
+pub const fn solve_nicopap_vertesians_nodeps_const<const N: usize>(input: &'static str) -> usize {
     // For 0ns results
     // match N {
     //     4 => nicopap_vertesians_const::RESULT_PART_1,
     //     14 => nicopap_vertesians_const::RESULT_PART_2,
     //     _ => unreachable!(),
     // }
-    nicopap_vertesians_const::process::<N>(input.as_bytes())
+    nicopap_vertesians_nodeps_const::process::<N>(input.as_bytes())
 }
 
-mod nicopap_vertesians_const {
+mod nicopap_vertesians_nodeps_const {
     pub(super) const RESULT_PART_1: usize = process::<4>(include_bytes!("./input.txt"));
     pub(super) const RESULT_PART_2: usize = process::<14>(include_bytes!("./input.txt"));
 
@@ -524,5 +524,41 @@ mod nicopap_vertesians_const {
     const fn check<const N: usize>(combined: u32) -> bool {
         let flipped_count = (combined & 0b11_1111_1111_1111_1111_1111_1111).count_ones();
         flipped_count == (N as u32)
+    }
+}
+
+pub fn solve_vertesians_nodeps_3_1<const N: usize>(input: &'static str) -> usize {
+    vertesians_nodeps_3_1::main::<N>(input)
+}
+
+mod vertesians_nodeps_3_1 {
+    pub(super) fn main<const N: usize>(input: &'static str) -> usize {
+        let data = input
+            .chars()
+            .map(|c| 1 << (c as u32 - 0x61))
+            .collect::<Vec<u32>>();
+
+        assert!(!data.is_empty(), "Received empty input");
+
+        process::<N>(data)
+    }
+
+    fn process<const N: usize>(data: Vec<u32>) -> usize {
+        for counter in 0.. {
+            let combined = {
+                let mut combined = 0;
+                for i in 0..N {
+                    combined |= data[counter + i];
+                }
+                combined
+            };
+
+            // Thanks to Gibonius for the suggestion to use u32::count_ones()
+            if combined.count_ones() == N as u32 {
+                return counter + N;
+            }
+        }
+
+        panic!("No valid sequence found");
     }
 }
