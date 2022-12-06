@@ -46,3 +46,7 @@ path = "src/day05/main.rs"
 [[bin]]
 name = "day06"
 path = "src/day06/main.rs"
+
+[dependencies]
+# Required for one of the day06 solutions (commented out)
+# phf = { version = "0.11.1", features = ["macros"] }

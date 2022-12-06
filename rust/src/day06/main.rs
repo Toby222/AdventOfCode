@@ -1,17 +1,17 @@
+#![feature(const_mut_refs)]
 #![feature(array_windows)]
-#![cfg_attr(test, feature(test))]
-#![allow(soft_unstable)]
-#![cfg(test)]
+#![feature(test)]
 extern crate test;
 
 const INPUT: &str = include_str!("input.txt");
 
+use solutions::*;
+
 mod part_1;
-use part_1::part_1_vec;
 mod part_2;
-use part_2::part_2_vec;
+mod solutions;
 
 pub fn main() {
-    println!("Part 1: {}", part_1_vec(INPUT));
-    println!("Part 2: {}", part_2_vec(INPUT));
+    println!("Part 1: {}", solve_vertesians_nodeps_const::<4>(INPUT));
+    println!("Part 2: {}", solve_vertesians_nodeps_const::<14>(INPUT));
 }
