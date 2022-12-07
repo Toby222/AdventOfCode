@@ -11,9 +11,8 @@ pub(crate) fn part_2(input: &Vec<ConsoleLine>) -> usize {
     for line in input {
         match line {
             ConsoleLine::MoveRoot => {
-                while current_directory.len() > 1 {
-                    current_directory.pop();
-                }
+                current_directory.clear();
+                current_directory.push("");
             }
             ConsoleLine::MoveUp => {
                 current_directory.pop();
