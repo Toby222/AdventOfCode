@@ -59,6 +59,10 @@ path = "src/day08/main.rs"
 name = "day09"
 path = "src/day09/main.rs"
 
+[[bin]]
+name = "day10"
+path = "src/day10/main.rs"
+
 [dependencies]
 # Required for one of the day06 solutions (commented out)
 # phf = { version = "0.11.1", features = ["macros"] }
