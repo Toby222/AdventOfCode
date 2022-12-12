@@ -12,8 +12,7 @@ pub(crate) fn part_1(input: &[[[u32; 2]; 2]]) -> usize {
     let times_contained = input
         .iter()
         .filter(|sections| sections_contain_each_other(**sections))
-        .collect::<Vec<_>>()
-        .len();
+        .count();
     println!("Part 1: {times_contained}");
     times_contained
 }

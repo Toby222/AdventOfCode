@@ -12,8 +12,7 @@ pub(crate) fn part_2(input: &[[[u32; 2]; 2]]) -> usize {
     let times_overlapped = input
         .iter()
         .filter(|sections| sections_overlap(**sections))
-        .collect::<Vec<_>>()
-        .len();
+        .count();
     println!("Part 2: {times_overlapped}");
     times_overlapped
 }

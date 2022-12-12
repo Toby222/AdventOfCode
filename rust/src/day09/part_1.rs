@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::Move;
 
-pub(crate) fn part_1(input: &Vec<Move>) -> usize {
+pub(crate) fn part_1(input: &[Move]) -> usize {
     let mut head_position = (0i64, 0i64);
     let mut tail_position = (0i64, 0i64);
     let mut visited_tail_positions = HashSet::new();

@@ -52,7 +52,7 @@ fn tail_update(diff: (i64, i64)) -> (i64, i64) {
     }
 }
 
-pub(crate) fn part_2(input: &Vec<Move>) -> usize {
+pub(crate) fn part_2(input: &[Move]) -> usize {
     let mut rope = Rope::<TAIL_LENGTH>::new();
 
     for head_movement in input {
