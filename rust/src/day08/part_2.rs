@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn test_with_solution() {
-        assert_eq!(super::part_2(crate::INPUT), 0);
+        assert_eq!(super::part_2(crate::INPUT), 313200);
     }
 
     #[test]

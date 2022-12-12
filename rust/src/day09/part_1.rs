@@ -45,7 +45,7 @@ mod tests {
 
     #[test]
     fn test_with_solution() {
-        assert_eq!(super::part_1(&crate::parse_input(crate::INPUT)), 0);
+        assert_eq!(super::part_1(&crate::parse_input(crate::INPUT)), 6271);
     }
 
     #[test]
