@@ -1,6 +1,6 @@
 [package]
 name = "advent-of-code"
-version = "22.12.2"
+version = "22.14.2"
 edition = "2021"
 resolver = "2"
 
@@ -70,6 +70,10 @@ path = "src/day11/main.rs"
 [[bin]]
 name = "day12"
 path = "src/day12/main.rs"
+
+[[bin]]
+name = "day14"
+path = "src/day14/main.rs"
 
 [dependencies]
 # Required for one of the day06 solutions (commented out)
