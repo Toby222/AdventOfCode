@@ -1,7 +1,7 @@
 pub(crate) fn part_2(mut input: crate::Input) -> u64 {
     // Increase by 1 because I break as soon as (500, 0) is placed, so it doesn't get counted
     let mut sand_count = 1;
-    while let inserted_at = input.insert_sand_floor::<500>() && inserted_at.1 != 0 {
+    while let inserted_at = input.insert_sand_floor::<500>() && inserted_at[1] != 0 {
         sand_count += 1;
     }
 
