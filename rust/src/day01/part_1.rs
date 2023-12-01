@@ -1,4 +1,4 @@
-pub(crate) fn part_1(input: &'static str) -> u64 {
+pub(crate) fn part_1(input: &'static str) -> u32 {
     input
         .lines()
         .map(|line| {
@@ -6,9 +6,7 @@ pub(crate) fn part_1(input: &'static str) -> u64 {
             let first_digit = digits.next().expect("At least 1 digit should be present");
             let last_digit = digits.last().unwrap_or(first_digit);
 
-            format!("{first_digit}{last_digit}")
-                .parse::<u64>()
-                .expect("Two digits should make a number")
+            (((first_digit as u32) - ('0' as u32)) * 10) + ((last_digit as u32) - ('0' as u32))
         })
         .sum()
 }

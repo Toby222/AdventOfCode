@@ -1,52 +1,64 @@
+use std::cmp::Reverse;
+
 const DIGIT_PATTERNS: [&str; 10] = [
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
 
-pub(crate) fn part_2(input: &'static str) -> u64 {
+#[cfg_attr(test, derive(Debug))]
+struct DigitIndices {
+    digit: usize,
+    first_index: usize,
+    last_index: usize,
+}
+
+pub(crate) fn part_2(input: &'static str) -> usize {
     input
         .lines()
         .map(|line| {
-            let mut digit_indices = DIGIT_PATTERNS
+            let digit_indices = DIGIT_PATTERNS
                 .iter()
                 .enumerate()
-                .map(|(number, pattern)| {
-                    let first_index_digit = line.find(&number.to_string());
-                    let first_index_str = line.find(pattern);
-                    let first_index = match (first_index_str, first_index_digit) {
-                        (Some(lhs), Some(rhs)) => Some(usize::min(lhs, rhs)),
-                        (None, idx) => idx,
-                        (idx, None) => idx,
-                    };
+                .filter_map(|(digit, pattern)| {
+                    // SAFETY: Generating a char from a number like this is guaranteed to be in ASCII range
+                    let first_index_digit = line
+                        .find(unsafe {
+                            char::from_u32(digit as u32 + b'0' as u32).unwrap_unchecked()
+                        })
+                        .map(Reverse);
+                    let first_index_str = line.find(pattern).map(Reverse);
+                    let Reverse(first_index) = Option::max(first_index_digit, first_index_str)?;
 
-                    let last_index_digit = line.rfind(&number.to_string());
+                    // SAFETY: Generating a char from a number like this is guaranteed to be in ASCII range
+                    let last_index_digit = line.rfind([unsafe {
+                        char::from_u32(digit as u32 + b'0' as u32).unwrap_unchecked()
+                    }]);
                     let last_index_str = line.rfind(pattern);
-                    let last_index = match (last_index_str, last_index_digit) {
-                        (Some(lhs), Some(rhs)) => Some(usize::max(lhs, rhs)),
-                        (None, idx) => idx,
-                        (idx, None) => idx,
-                    };
+                    let last_index = Option::max(last_index_digit, last_index_str)?;
 
-                    (number, first_index, last_index)
+                    Some(DigitIndices {
+                        digit,
+                        first_index,
+                        last_index,
+                    })
                 })
                 .collect::<Vec<_>>();
-            digit_indices.sort_unstable_by(|a, b| match (a.1, b.1) {
-                (Some(_), None) => std::cmp::Ordering::Less,
-                (None, Some(_)) => std::cmp::Ordering::Greater,
-                (None, None) => std::cmp::Ordering::Equal,
-                (Some(lhs), Some(rhs)) => lhs.cmp(&rhs),
-            });
-            // SAFETY: Slice is guaranteed to be length 10
-            let first_digit = unsafe { digit_indices.first().unwrap_unchecked() }.0;
-            digit_indices.sort_unstable_by(|a, b| match (a.2, b.2) {
-                (Some(_), None) => std::cmp::Ordering::Less,
-                (None, Some(_)) => std::cmp::Ordering::Greater,
-                (None, None) => std::cmp::Ordering::Equal,
-                (Some(lhs), Some(rhs)) => rhs.cmp(&lhs),
-            });
-            let last_digit = unsafe { digit_indices.first().unwrap_unchecked() }.0;
-            format!("{first_digit}{last_digit}")
-                .parse::<u64>()
-                .expect("digits are guaranteed to create a valid number")
+            // SAFETY: Each line is guaranteed to have at least one digit
+            let first_digit = unsafe {
+                digit_indices
+                    .iter()
+                    .min_by_key(|val| val.first_index)
+                    .unwrap_unchecked()
+            }
+            .digit;
+            let last_digit = unsafe {
+                digit_indices
+                    .iter()
+                    .max_by_key(|val| val.last_index)
+                    .unwrap_unchecked()
+            }
+            .digit;
+
+            (first_digit * 10) + last_digit
         })
         .sum()
 }
