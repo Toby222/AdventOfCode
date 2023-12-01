@@ -1,42 +1,42 @@
 use std::cmp::Reverse;
 
-const DIGIT_PATTERNS: [&str; 10] = [
-    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+const DIGIT_PATTERNS: [(char, &str); 10] = [
+    ('0', "zero"),
+    ('1', "one"),
+    ('2', "two"),
+    ('3', "three"),
+    ('4', "four"),
+    ('5', "five"),
+    ('6', "six"),
+    ('7', "seven"),
+    ('8', "eight"),
+    ('9', "nine"),
 ];
 
 #[cfg_attr(test, derive(Debug))]
 struct DigitIndices {
-    digit: usize,
+    digit: u8,
     first_index: usize,
     last_index: usize,
 }
 
-pub(crate) fn part_2(input: &'static str) -> usize {
+pub(crate) fn part_2(input: &'static str) -> u32 {
     input
         .lines()
         .map(|line| {
             let digit_indices = DIGIT_PATTERNS
                 .iter()
-                .enumerate()
                 .filter_map(|(digit, pattern)| {
-                    // SAFETY: Generating a char from a number like this is guaranteed to be in ASCII range
-                    let first_index_digit = line
-                        .find(unsafe {
-                            char::from_u32(digit as u32 + b'0' as u32).unwrap_unchecked()
-                        })
-                        .map(Reverse);
+                    let first_index_digit = line.find(*digit).map(Reverse);
                     let first_index_str = line.find(pattern).map(Reverse);
                     let Reverse(first_index) = Option::max(first_index_digit, first_index_str)?;
 
-                    // SAFETY: Generating a char from a number like this is guaranteed to be in ASCII range
-                    let last_index_digit = line.rfind([unsafe {
-                        char::from_u32(digit as u32 + b'0' as u32).unwrap_unchecked()
-                    }]);
+                    let last_index_digit = line.rfind(*digit);
                     let last_index_str = line.rfind(pattern);
                     let last_index = Option::max(last_index_digit, last_index_str)?;
 
                     Some(DigitIndices {
-                        digit,
+                        digit: unsafe { digit.to_digit(10).unwrap_unchecked() } as u8,
                         first_index,
                         last_index,
                     })
@@ -58,7 +58,7 @@ pub(crate) fn part_2(input: &'static str) -> usize {
             }
             .digit;
 
-            (first_digit * 10) + last_digit
+            (first_digit as u32 * 10) + last_digit as u32
         })
         .sum()
 }
