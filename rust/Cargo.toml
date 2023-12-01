@@ -1,6 +1,6 @@
 [package]
 name = "advent-of-code"
-version = "23.0.0"
+version = "23.1.1"
 
 [profile.release]
 strip = "symbols"
@@ -22,3 +22,7 @@ name = "template"
 # day00 for alphabetic sorting
 path = "src/day00/main.rs"
 test = false
+
+[[bin]]
+name = "day01"
+path = "src/day01/main.rs"
