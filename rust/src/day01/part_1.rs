@@ -15,7 +15,7 @@ pub(crate) fn part_1(input: &'static str) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    const SAMPLE_INPUT: &str = include_str!("sample_input.txt");
+    const SAMPLE_INPUT: &str = include_str!("sample_input_part_1.txt");
 
     #[test]
     fn test_with_sample_solution() {
