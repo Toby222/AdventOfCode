@@ -1,38 +1,10 @@
-#[derive(Default)]
-struct CubeCounts {
-    red: u16,
-    green: u16,
-    blue: u16,
-}
-impl CubeCounts {
-    const fn power(&self) -> u16 {
-        self.red * self.green * self.blue
-    }
-}
-
-impl std::ops::Add<CubeCounts> for CubeCounts {
-    type Output = Self;
-
-    fn add(self, rhs: CubeCounts) -> Self::Output {
-        Self {
-            red: self.red + rhs.red,
-            green: self.green + rhs.green,
-            blue: self.blue + rhs.blue,
-        }
-    }
-}
-
-impl std::iter::Sum<CubeCounts> for CubeCounts {
-    fn sum<I: Iterator<Item = CubeCounts>>(iter: I) -> Self {
-        iter.fold(CubeCounts::default(), |acc, x| acc + x)
-    }
-}
+use crate::CubeCounts;
 
 pub(crate) fn part_2(input: &'static str) -> u16 {
     let id_sum = input
         .lines()
         .map(|line| {
-            let game_start_index = line.find(":").expect("Every line should have a ': '") + 2;
+            let game_start_index = line.find(':').expect("Every line should have a ': '") + 2;
 
             let game = &line[game_start_index..];
 
@@ -42,33 +14,22 @@ pub(crate) fn part_2(input: &'static str) -> u16 {
                 .map(|group| {
                     let color_counts = group.split(", ");
 
-                    let group_counts =
-                        color_counts.map(|color_count| {
-                            let (count, color) = color_count
-                                .split_once(' ')
-                                .expect("Every color count should have one space");
+                    let group_counts = color_counts.map(|color_count| {
+                        let (count, color) = color_count
+                            .split_once(' ')
+                            .expect("Every color count should have one space");
 
-                            let count = count.parse().expect(
-                        format!("Every color count should be a valid number - `{count}` `{color}`")
-                            .as_str(),
-                    );
+                        let count = count
+                            .parse()
+                            .expect("Every color count should be a valid number");
 
-                            match color {
-                                "red" => CubeCounts {
-                                    red: count,
-                                    ..Default::default()
-                                },
-                                "green" => CubeCounts {
-                                    green: count,
-                                    ..Default::default()
-                                },
-                                "blue" => CubeCounts {
-                                    blue: count,
-                                    ..Default::default()
-                                },
-                                _ => unreachable!(),
-                            }
-                        });
+                        match color {
+                            "red" => CubeCounts::red(count),
+                            "green" => CubeCounts::green(count),
+                            "blue" => CubeCounts::blue(count),
+                            _ => unreachable!(),
+                        }
+                    });
                     group_counts.sum::<CubeCounts>()
                 })
                 .reduce(|acc, cube_count| CubeCounts {
