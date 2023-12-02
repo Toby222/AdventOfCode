@@ -1,6 +1,6 @@
 [package]
 name = "advent-of-code"
-version = "23.2.1"
+version = "23.2.2"
 edition = "2021"
 default-run = "day02"
 
