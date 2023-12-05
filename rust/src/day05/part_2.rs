@@ -1,8 +1,8 @@
-use std::{cmp::Ordering, fmt::Debug, ops::RangeInclusive, str::FromStr};
+use std::{cmp::Ordering, fmt::Debug, ops::Range, str::FromStr};
 
 pub(crate) struct Mapping {
-    source_range: std::ops::RangeInclusive<i64>,
-    destination_range: std::ops::RangeInclusive<i64>,
+    source_range: std::ops::Range<i64>,
+    destination_range: std::ops::Range<i64>,
 }
 
 impl Debug for Mapping {
@@ -22,7 +22,7 @@ enum Overlap {
     //   RANGE       789  // < < < < // 789     // X
     //   RANGE 123        // > > > > // 123     // X
     None {
-        rest: RangeInclusive<i64>,
+        rest: Range<i64>,
     },
     // MAPPING   345      -> 789 (+4)
     //   RANGE  234       // > > < > // 2 78    // X
@@ -32,63 +32,63 @@ enum Overlap {
     //   RANGE 1234       // > = < > // 12 78   // X
     //   RANGE   3456     // = < < > // 789 X   //
     Simple {
-        contained: RangeInclusive<i64>,
-        rest: RangeInclusive<i64>,
+        contained: Range<i64>,
+        rest: Range<i64>,
     },
     // MAPPING 1234       -> 5678 (+4)
     //   RANGE  234       // < = < > // 678     // X
     //   RANGE 123        // = > < > // 567     // X
     Contained {
-        contained: RangeInclusive<i64>,
+        contained: Range<i64>,
     },
     // MAPPING 12345      -> 56789 (+4)
     //   RANGE  234       // < > < > // 789     // X
     //   RANGE 12345      // = = < > // 56789   // X
     Complete {
-        contained: RangeInclusive<i64>,
+        contained: Range<i64>,
     },
     // MAPPING  234       -> 678 (+4)
     //   RANGE 12345      // > < < > // 1 678 5 // X
     Overreaching {
-        left: RangeInclusive<i64>,
-        contained: RangeInclusive<i64>,
-        right: RangeInclusive<i64>,
+        left: Range<i64>,
+        contained: Range<i64>,
+        right: Range<i64>,
     },
 }
 
 impl Mapping {
     const fn diff(&self) -> i64 {
-        *self.destination_range.start() - *self.source_range.start()
+        self.destination_range.start - self.source_range.start
     }
-    fn apply(&self, range: &RangeInclusive<i64>) -> Overlap {
+    fn apply(&self, range: &Range<i64>) -> Overlap {
         let result = match (
-            i64::cmp(self.source_range.start(), range.start()),
-            i64::cmp(self.source_range.end(), range.end()),
-            i64::cmp(self.source_range.start(), range.end()),
-            i64::cmp(self.source_range.end(), range.start()),
+            i64::cmp(&self.source_range.start, &range.start),
+            i64::cmp(&self.source_range.end, &range.end),
+            i64::cmp(&self.source_range.start, &range.end),
+            i64::cmp(&self.source_range.end, &range.start),
         ) {
             (Ordering::Equal, Ordering::Less, Ordering::Less, Ordering::Greater) => {
                 Overlap::Simple {
                     contained: self.destination_range.clone(),
-                    rest: self.source_range.end() + 1..=*range.end(),
+                    rest: self.source_range.end + 1..range.end,
                 }
             }
             (Ordering::Greater, Ordering::Equal, Ordering::Less, Ordering::Greater) => {
                 Overlap::Simple {
-                    contained: *self.destination_range.start()..=range.end() + self.diff(),
-                    rest: *range.start()..=self.source_range.start() - 1,
+                    contained: self.destination_range.start..range.end + self.diff(),
+                    rest: range.start..self.source_range.start - 1,
                 }
             }
             (Ordering::Greater, Ordering::Less, Ordering::Less, Ordering::Greater) => {
                 Overlap::Overreaching {
-                    left: *range.start()..=self.source_range.start() - 1,
+                    left: range.start..self.source_range.start - 1,
                     contained: self.destination_range.clone(),
-                    right: self.source_range.end() + 1..=*range.end(),
+                    right: self.source_range.end + 1..range.end,
                 }
             }
             (Ordering::Less, Ordering::Greater, Ordering::Less, Ordering::Greater) => {
                 Overlap::Complete {
-                    contained: range.start() + self.diff()..=range.end() + self.diff(),
+                    contained: range.start + self.diff()..range.end + self.diff(),
                 }
             }
             (Ordering::Equal, Ordering::Equal, Ordering::Less, Ordering::Greater) => {
@@ -103,26 +103,26 @@ impl Mapping {
             (Ordering::Less, Ordering::Equal, Ordering::Less, Ordering::Greater)
             | (Ordering::Equal, Ordering::Greater, Ordering::Less, Ordering::Greater) => {
                 Overlap::Contained {
-                    contained: range.start() + self.diff()..=range.end() + self.diff(),
+                    contained: range.start + self.diff()..range.end + self.diff(),
                 }
             }
             (Ordering::Greater, Ordering::Greater, Ordering::Less, Ordering::Greater) => {
                 Overlap::Simple {
-                    rest: *range.start()..=self.source_range.start() - 1,
-                    contained: *self.destination_range.start()..=range.end() + self.diff(),
+                    rest: range.start..self.source_range.start - 1,
+                    contained: self.destination_range.start..range.end + self.diff(),
                 }
             }
             (Ordering::Less, Ordering::Less, Ordering::Less, Ordering::Greater)
             | (Ordering::Less, Ordering::Less, Ordering::Less, Ordering::Equal) => {
                 Overlap::Simple {
-                    contained: *range.start() + self.diff()..=*self.destination_range.end(),
-                    rest: self.source_range.end() + 1..=*range.end(),
+                    contained: range.start + self.diff()..self.destination_range.end,
+                    rest: self.source_range.end + 1..range.end,
                 }
             }
             (Ordering::Greater, Ordering::Greater, Ordering::Equal, Ordering::Greater) => {
                 Overlap::Simple {
-                    rest: *range.start()..=self.source_range.start() - 1,
-                    contained: *self.destination_range.start()..=range.end() + self.diff(),
+                    rest: range.start..self.source_range.start - 1,
+                    contained: self.destination_range.start..range.end + self.diff(),
                 }
             }
             (a, b, c, d) => unreachable!("{:?} {:?} {:?} {:?}", a, b, c, d),
@@ -130,20 +130,19 @@ impl Mapping {
 
         match &result {
             Overlap::Contained { contained } => assert_eq!(
-                range.end() - range.start() + 1,
-                contained.end() - contained.start() + 1
+                range.end - range.start + 1,
+                contained.end - contained.start + 1
             ),
             Overlap::Complete { contained } => assert_eq!(
-                range.end() - range.start() + 1,
-                contained.end() - contained.start() + 1
+                range.end - range.start + 1,
+                contained.end - contained.start + 1
             ),
-            Overlap::None { rest } => assert_eq!(
-                range.end() - range.start() + 1,
-                rest.end() - rest.start() + 1
-            ),
+            Overlap::None { rest } => {
+                assert_eq!(range.end - range.start + 1, rest.end - rest.start + 1)
+            }
             Overlap::Simple { rest, contained } => assert_eq!(
-                range.end() - range.start() + 1,
-                (rest.end() - rest.start() + 1) + (contained.end() - contained.start() + 1),
+                range.end - range.start + 1,
+                (rest.end - rest.start + 1) + (contained.end - contained.start + 1),
                 "{:?} ; {} ; {:?} ; {:?}",
                 range,
                 self,
@@ -156,10 +155,10 @@ impl Mapping {
                 contained,
                 right,
             } => assert_eq!(
-                range.end() - range.start() + 1,
-                (left.end() - left.start() + 1)
-                    + (contained.end() - contained.start() + 1)
-                    + (right.end() - right.start() + 1)
+                range.end - range.start + 1,
+                (left.end - left.start + 1)
+                    + (contained.end - contained.start + 1)
+                    + (right.end - right.start + 1)
             ),
         }
 
@@ -179,8 +178,8 @@ impl FromStr for Mapping {
         let source_start = range[1];
         let length = range[2];
         Ok(Mapping {
-            destination_range: destination_start..=destination_start + length - 1,
-            source_range: source_start..=source_start + length - 1,
+            destination_range: destination_start..destination_start + length - 1,
+            source_range: source_start..source_start + length - 1,
         })
     }
 }
@@ -196,7 +195,7 @@ pub(crate) fn part_2(input: &'static str) -> Result<i64, <Mapping as FromStr>::E
         .collect::<Result<Vec<_>, _>>()?
         .chunks_exact(2)
         .map(|v| [v[0], v[1]])
-        .map(|[start, length]| start..=(start + length - 1))
+        .map(|[start, length]| start..(start + length - 1))
         .collect::<Vec<_>>();
     println!("seed {:?}", seed_values);
     let seed_to_soil = lines
@@ -471,12 +470,7 @@ pub(crate) fn part_2(input: &'static str) -> Result<i64, <Mapping as FromStr>::E
     location_values.extend_from_slice(&humidity_values);
     println!("loct {:?}", location_values);
 
-    Ok(location_values
-        .iter()
-        .map(RangeInclusive::start)
-        .min()
-        .copied()
-        .unwrap())
+    Ok(location_values.iter().map(|v| v.start).min().unwrap())
 }
 
 #[cfg(test)]
