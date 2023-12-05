@@ -14,9 +14,12 @@ impl FromStr for Mapping {
             .map(|num| num.parse::<i64>())
             .collect::<Result<Vec<_>, _>>()?;
         assert_eq!(range.len(), 3);
+        let destination_start = range[0];
+        let source_start = range[1];
+        let length = range[2];
         Ok(Mapping {
-            destination_range: range[0]..=range[0] + range[2],
-            source_range: range[1]..=range[1] + range[2],
+            destination_range: destination_start..=destination_start + length - 1,
+            source_range: source_start..=source_start + length - 1,
         })
     }
 }

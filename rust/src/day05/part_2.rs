@@ -21,29 +21,39 @@ enum Overlap {
     // MAPPING    456     -> 789 (+3)
     //   RANGE       789  // < < < < // 789     // X
     //   RANGE 123        // > > > > // 123     // X
-    None(RangeInclusive<i64>),
+    None {
+        rest: RangeInclusive<i64>,
+    },
     // MAPPING   345      -> 789 (+4)
     //   RANGE  234       // > > < > // 2 78    // X
     //   RANGE     567    // < < < = // 9 67    // X
     //   RANGE    456     // < < < > // 89 6    // X
     //   RANGE 123        // > > = > // 12 7    // X
-    //   RANGE 1234       // > = < > // 12 78   //
-    Simple(RangeInclusive<i64>, RangeInclusive<i64>),
+    //   RANGE 1234       // > = < > // 12 78   // X
+    //   RANGE   3456     // = < < > // 789 X   //
+    Simple {
+        contained: RangeInclusive<i64>,
+        rest: RangeInclusive<i64>,
+    },
     // MAPPING 1234       -> 5678 (+4)
     //   RANGE  234       // < = < > // 678     // X
-    //   RANGE 123        // = > = > // 567     // X
-    Contained(RangeInclusive<i64>),
+    //   RANGE 123        // = > < > // 567     // X
+    Contained {
+        contained: RangeInclusive<i64>,
+    },
     // MAPPING 12345      -> 56789 (+4)
     //   RANGE  234       // < > < > // 789     // X
-    //   RANGE 12345      // = = = = // 56789   // X
-    Complete(RangeInclusive<i64>),
+    //   RANGE 12345      // = = < > // 56789   // X
+    Complete {
+        contained: RangeInclusive<i64>,
+    },
     // MAPPING  234       -> 678 (+4)
     //   RANGE 12345      // > < < > // 1 678 5 // X
-    Overreaching(
-        RangeInclusive<i64>,
-        RangeInclusive<i64>,
-        RangeInclusive<i64>,
-    ),
+    Overreaching {
+        left: RangeInclusive<i64>,
+        contained: RangeInclusive<i64>,
+        right: RangeInclusive<i64>,
+    },
 }
 
 impl Mapping {
@@ -57,84 +67,103 @@ impl Mapping {
             i64::cmp(self.source_range.start(), range.end()),
             i64::cmp(self.source_range.end(), range.start()),
         ) {
+            (Ordering::Equal, Ordering::Less, Ordering::Less, Ordering::Greater) => {
+                Overlap::Simple {
+                    contained: self.destination_range.clone(),
+                    rest: self.source_range.end() + 1..=*range.end(),
+                }
+            }
             (Ordering::Greater, Ordering::Equal, Ordering::Less, Ordering::Greater) => {
-                Overlap::Simple(
-                    *range.start()..=self.source_range.start() - 1,
-                    *self.destination_range.start()..=range.end() + self.diff(),
-                )
+                Overlap::Simple {
+                    contained: *self.destination_range.start()..=range.end() + self.diff(),
+                    rest: *range.start()..=self.source_range.start() - 1,
+                }
             }
             (Ordering::Greater, Ordering::Less, Ordering::Less, Ordering::Greater) => {
-                Overlap::Overreaching(
-                    *range.start()..=self.source_range.start() - 1,
-                    self.destination_range.clone(),
-                    self.source_range.end() + 1..=*range.end(),
-                )
+                Overlap::Overreaching {
+                    left: *range.start()..=self.source_range.start() - 1,
+                    contained: self.destination_range.clone(),
+                    right: self.source_range.end() + 1..=*range.end(),
+                }
             }
             (Ordering::Less, Ordering::Greater, Ordering::Less, Ordering::Greater) => {
-                Overlap::Complete(range.start() + self.diff()..=range.end() + self.diff())
+                Overlap::Complete {
+                    contained: range.start() + self.diff()..=range.end() + self.diff(),
+                }
             }
-            (Ordering::Equal, Ordering::Equal, Ordering::Equal, Ordering::Equal) => {
-                Overlap::Complete(self.destination_range.clone())
+            (Ordering::Equal, Ordering::Equal, Ordering::Less, Ordering::Greater) => {
+                Overlap::Complete {
+                    contained: self.destination_range.clone(),
+                }
             }
             (Ordering::Greater, Ordering::Greater, Ordering::Greater, Ordering::Greater)
-            | (Ordering::Less, Ordering::Less, Ordering::Less, Ordering::Less) => {
-                Overlap::None(range.clone())
-            }
+            | (Ordering::Less, Ordering::Less, Ordering::Less, Ordering::Less) => Overlap::None {
+                rest: range.clone(),
+            },
             (Ordering::Less, Ordering::Equal, Ordering::Less, Ordering::Greater)
-            | (Ordering::Equal, Ordering::Greater, Ordering::Equal, Ordering::Greater) => {
-                Overlap::Contained(range.start() + self.diff()..=range.end() + self.diff())
+            | (Ordering::Equal, Ordering::Greater, Ordering::Less, Ordering::Greater) => {
+                Overlap::Contained {
+                    contained: range.start() + self.diff()..=range.end() + self.diff(),
+                }
             }
             (Ordering::Greater, Ordering::Greater, Ordering::Less, Ordering::Greater) => {
-                Overlap::Simple(
-                    *range.start()..=self.source_range.start() - 1,
-                    *self.destination_range.start()..=range.end() + self.diff(),
-                )
+                Overlap::Simple {
+                    rest: *range.start()..=self.source_range.start() - 1,
+                    contained: *self.destination_range.start()..=range.end() + self.diff(),
+                }
             }
             (Ordering::Less, Ordering::Less, Ordering::Less, Ordering::Greater)
-            | (Ordering::Less, Ordering::Less, Ordering::Less, Ordering::Equal) => Overlap::Simple(
-                *range.start() + self.diff()..=*self.destination_range.end(),
-                self.source_range.end() + 1..=*range.end(),
-            ),
+            | (Ordering::Less, Ordering::Less, Ordering::Less, Ordering::Equal) => {
+                Overlap::Simple {
+                    contained: *range.start() + self.diff()..=*self.destination_range.end(),
+                    rest: self.source_range.end() + 1..=*range.end(),
+                }
+            }
             (Ordering::Greater, Ordering::Greater, Ordering::Equal, Ordering::Greater) => {
-                Overlap::Simple(
-                    *range.start()..=self.source_range.start() - 1,
-                    *self.destination_range.start()..=range.end() + self.diff(),
-                )
+                Overlap::Simple {
+                    rest: *range.start()..=self.source_range.start() - 1,
+                    contained: *self.destination_range.start()..=range.end() + self.diff(),
+                }
             }
             (a, b, c, d) => unreachable!("{:?} {:?} {:?} {:?}", a, b, c, d),
         };
 
         match &result {
-            Overlap::Contained(value) => assert_eq!(
+            Overlap::Contained { contained } => assert_eq!(
                 range.end() - range.start() + 1,
-                value.end() - value.start() + 1
+                contained.end() - contained.start() + 1
             ),
-            Overlap::Complete(value) => assert_eq!(
+            Overlap::Complete { contained } => assert_eq!(
                 range.end() - range.start() + 1,
-                value.end() - value.start() + 1
+                contained.end() - contained.start() + 1
             ),
-            Overlap::None(value) => assert_eq!(
+            Overlap::None { rest } => assert_eq!(
                 range.end() - range.start() + 1,
-                value.end() - value.start() + 1
+                rest.end() - rest.start() + 1
             ),
-            Overlap::Simple(value1, value2) => assert_eq!(
+            Overlap::Simple { rest, contained } => assert_eq!(
                 range.end() - range.start() + 1,
-                (value1.end() - value1.start() + 1) + (value2.end() - value2.start() + 1)
+                (rest.end() - rest.start() + 1) + (contained.end() - contained.start() + 1),
+                "{:?} ; {} ; {:?} ; {:?}",
+                range,
+                self,
+                contained,
+                rest,
             ),
 
-            Overlap::Overreaching(value1, value2, value3) => assert_eq!(
+            Overlap::Overreaching {
+                left,
+                contained,
+                right,
+            } => assert_eq!(
                 range.end() - range.start() + 1,
-                (value1.end() - value1.start() + 1)
-                    + (value2.end() - value2.start() + 1)
-                    + (value3.end() - value3.start() + 1)
+                (left.end() - left.start() + 1)
+                    + (contained.end() - contained.start() + 1)
+                    + (right.end() - right.start() + 1)
             ),
         }
 
         result
-    }
-
-    fn source_overlaps(&self, range: &RangeInclusive<i64>) -> bool {
-        self.source_range.end() >= range.start() && self.source_range.start() <= range.end()
     }
 }
 
@@ -150,8 +179,8 @@ impl FromStr for Mapping {
         let source_start = range[1];
         let length = range[2];
         Ok(Mapping {
-            destination_range: destination_start..=destination_start + length,
-            source_range: source_start..=source_start + length,
+            destination_range: destination_start..=destination_start + length - 1,
+            source_range: source_start..=source_start + length - 1,
         })
     }
 }
@@ -160,7 +189,7 @@ pub(crate) fn part_2(input: &'static str) -> Result<i64, <Mapping as FromStr>::E
     let mut lines = input.lines();
     let lines = lines.by_ref();
 
-    let seed_values = lines
+    let mut seed_values = lines
         .take_while(|line| !line.is_empty())
         .map(|line| line.split(' ').skip(1).map(|num| num.parse::<i64>()))
         .flatten()
@@ -169,240 +198,278 @@ pub(crate) fn part_2(input: &'static str) -> Result<i64, <Mapping as FromStr>::E
         .map(|v| [v[0], v[1]])
         .map(|[start, length]| start..=(start + length - 1))
         .collect::<Vec<_>>();
-    // println!("seed {:?}", values);
+    println!("seed {:?}", seed_values);
     let seed_to_soil = lines
         .take_while(|line| !line.is_empty())
         .skip(1)
         .map(Mapping::from_str)
         .collect::<Result<Vec<_>, _>>()?;
-    // println!("     {:?}", seed_to_soil);
+    println!("     {:?}", seed_to_soil);
     let mut soil_values = vec![];
-    for seed in seed_values.iter() {
-        if let Some(mapping) = seed_to_soil
-            .iter()
-            .find(|mapping| mapping.source_overlaps(seed))
-        {
+    for mapping in &seed_to_soil {
+        let mut new_seeds = vec![];
+        for seed in &seed_values {
             let overlap = mapping.apply(seed);
+
             match overlap {
-                Overlap::None(_) => unreachable!(),
-                Overlap::Contained(range) | Overlap::Complete(range) => soil_values.push(range),
-                Overlap::Simple(left, right) => {
-                    soil_values.push(left);
-                    soil_values.push(right);
+                Overlap::None { rest } => {
+                    new_seeds.push(rest);
                 }
-                Overlap::Overreaching(left, right, rest) => {
-                    soil_values.push(left);
-                    soil_values.push(right);
-                    soil_values.push(rest);
+                Overlap::Simple { contained, rest } => {
+                    soil_values.push(contained);
+                    new_seeds.push(rest);
+                }
+                Overlap::Contained { contained } => soil_values.push(contained),
+                Overlap::Complete { contained } => soil_values.push(contained),
+                Overlap::Overreaching {
+                    left,
+                    contained,
+                    right,
+                } => {
+                    soil_values.push(contained);
+                    new_seeds.push(left);
+                    new_seeds.push(right);
                 }
             }
-        } else {
-            soil_values.push(seed.clone());
         }
+        seed_values = new_seeds;
     }
+    soil_values.extend_from_slice(&seed_values);
 
-    // println!("soil {:?}", soil_values);
+    println!("soil {:?}", soil_values);
     let soil_to_fertilizer = lines
         .take_while(|line| !line.is_empty())
         .skip(1)
         .map(Mapping::from_str)
         .collect::<Result<Vec<_>, _>>()?;
-    // println!("     {:?}", soil_to_fertilizer);
+    println!("     {:?}", soil_to_fertilizer);
 
     let mut fertilizer_values = vec![];
-    for soil in soil_values.iter() {
-        if let Some(mapping) = soil_to_fertilizer
-            .iter()
-            .find(|mapping| mapping.source_overlaps(soil))
-        {
+    for mapping in &soil_to_fertilizer {
+        let mut new_soils = vec![];
+        for soil in &soil_values {
             let overlap = mapping.apply(soil);
+
             match overlap {
-                Overlap::None(_) => unreachable!(),
-                Overlap::Contained(range) | Overlap::Complete(range) => {
-                    fertilizer_values.push(range)
+                Overlap::None { rest } => {
+                    new_soils.push(rest);
                 }
-                Overlap::Simple(left, right) => {
-                    fertilizer_values.push(left);
-                    fertilizer_values.push(right);
+                Overlap::Simple { contained, rest } => {
+                    fertilizer_values.push(contained);
+                    new_soils.push(rest);
                 }
-                Overlap::Overreaching(left, right, rest) => {
-                    fertilizer_values.push(left);
-                    fertilizer_values.push(right);
-                    fertilizer_values.push(rest);
+                Overlap::Contained { contained } => fertilizer_values.push(contained),
+                Overlap::Complete { contained } => fertilizer_values.push(contained),
+                Overlap::Overreaching {
+                    left,
+                    contained,
+                    right,
+                } => {
+                    fertilizer_values.push(contained);
+                    new_soils.push(left);
+                    new_soils.push(right);
                 }
             }
-        } else {
-            fertilizer_values.push(soil.clone());
         }
+        soil_values = new_soils;
     }
+    fertilizer_values.extend_from_slice(&soil_values);
 
-    // println!("fert {:?}", fertilizer_values);
+    println!("fert {:?}", fertilizer_values);
     let fertilizer_to_water = lines
         .take_while(|line| !line.is_empty())
         .skip(1)
         .map(Mapping::from_str)
         .collect::<Result<Vec<_>, _>>()?;
-    // println!("     {:?}", fertilizer_to_water);
+    println!("     {:?}", fertilizer_to_water);
 
     let mut water_values = vec![];
-    for fertilizer in fertilizer_values.iter() {
-        if let Some(mapping) = fertilizer_to_water
-            .iter()
-            .find(|mapping| mapping.source_overlaps(fertilizer))
-        {
+    for mapping in &fertilizer_to_water {
+        let mut new_fertilizers = vec![];
+        for fertilizer in &fertilizer_values {
             let overlap = mapping.apply(fertilizer);
+
             match overlap {
-                Overlap::None(_) => unreachable!(),
-                Overlap::Contained(range) | Overlap::Complete(range) => water_values.push(range),
-                Overlap::Simple(left, right) => {
-                    water_values.push(left);
-                    water_values.push(right);
+                Overlap::None { rest } => {
+                    new_fertilizers.push(rest);
                 }
-                Overlap::Overreaching(left, right, rest) => {
-                    water_values.push(left);
-                    water_values.push(right);
-                    water_values.push(rest);
+                Overlap::Simple { contained, rest } => {
+                    water_values.push(contained);
+                    new_fertilizers.push(rest);
+                }
+                Overlap::Contained { contained } => water_values.push(contained),
+                Overlap::Complete { contained } => water_values.push(contained),
+                Overlap::Overreaching {
+                    left,
+                    contained,
+                    right,
+                } => {
+                    water_values.push(contained);
+                    new_fertilizers.push(left);
+                    new_fertilizers.push(right);
                 }
             }
-        } else {
-            water_values.push(fertilizer.clone());
         }
+        fertilizer_values = new_fertilizers;
     }
-    // println!("watr {:?}", water_values);
+    water_values.extend_from_slice(&fertilizer_values);
+
+    println!("watr {:?}", water_values);
     let water_to_light = lines
         .take_while(|line| !line.is_empty())
         .skip(1)
         .map(Mapping::from_str)
         .collect::<Result<Vec<_>, _>>()?;
-    // println!("     {:?}", water_to_light);
+    println!("     {:?}", water_to_light);
 
     let mut light_values = vec![];
-    for water in water_values.iter() {
-        if let Some(mapping) = water_to_light
-            .iter()
-            .find(|mapping| mapping.source_overlaps(water))
-        {
-            if *water.start() == 81 && *water.end() == 94 {
-                // println!("DEBUG");
-            }
-            let overlap = mapping.apply(water);
+    for mapping in &water_to_light {
+        let mut new_waters = vec![];
+        for fertilizer in &water_values {
+            let overlap = mapping.apply(fertilizer);
+
             match overlap {
-                Overlap::None(_) => unreachable!(),
-                Overlap::Contained(range) | Overlap::Complete(range) => light_values.push(range),
-                Overlap::Simple(left, right) => {
-                    light_values.push(left);
-                    light_values.push(right);
+                Overlap::None { rest } => {
+                    new_waters.push(rest);
                 }
-                Overlap::Overreaching(left, right, rest) => {
-                    light_values.push(left);
-                    light_values.push(right);
-                    light_values.push(rest);
+                Overlap::Simple { contained, rest } => {
+                    light_values.push(contained);
+                    new_waters.push(rest);
+                }
+                Overlap::Contained { contained } => light_values.push(contained),
+                Overlap::Complete { contained } => light_values.push(contained),
+                Overlap::Overreaching {
+                    left,
+                    contained,
+                    right,
+                } => {
+                    light_values.push(contained);
+                    new_waters.push(left);
+                    new_waters.push(right);
                 }
             }
-        } else {
-            light_values.push(water.clone());
         }
+        water_values = new_waters;
     }
-    // println!("lite {:?}", light_values);
+    light_values.extend_from_slice(&water_values);
+
+    println!("lite {:?}", light_values);
     let light_to_temperature = lines
         .take_while(|line| !line.is_empty())
         .skip(1)
         .map(Mapping::from_str)
         .collect::<Result<Vec<_>, _>>()?;
-    // println!("     {:?}", light_to_temperature);
+    println!("     {:?}", light_to_temperature);
 
     let mut temperature_values = vec![];
-    for light in light_values.iter() {
-        if let Some(mapping) = light_to_temperature
-            .iter()
-            .find(|mapping| mapping.source_overlaps(light))
-        {
+    for mapping in &light_to_temperature {
+        let mut new_lights = vec![];
+        for light in &light_values {
             let overlap = mapping.apply(light);
+
             match overlap {
-                Overlap::None(_) => unreachable!(),
-                Overlap::Contained(range) | Overlap::Complete(range) => {
-                    temperature_values.push(range)
+                Overlap::None { rest } => {
+                    new_lights.push(rest);
                 }
-                Overlap::Simple(left, right) => {
-                    temperature_values.push(left);
-                    temperature_values.push(right);
+                Overlap::Simple { contained, rest } => {
+                    temperature_values.push(contained);
+                    new_lights.push(rest);
                 }
-                Overlap::Overreaching(left, right, rest) => {
-                    temperature_values.push(left);
-                    temperature_values.push(right);
-                    temperature_values.push(rest);
+                Overlap::Contained { contained } => temperature_values.push(contained),
+                Overlap::Complete { contained } => temperature_values.push(contained),
+                Overlap::Overreaching {
+                    left,
+                    contained,
+                    right,
+                } => {
+                    temperature_values.push(contained);
+                    new_lights.push(left);
+                    new_lights.push(right);
                 }
             }
-        } else {
-            temperature_values.push(light.clone());
         }
+        light_values = new_lights;
     }
+    temperature_values.extend_from_slice(&light_values);
 
-    // println!("temp {:?}", temperature_values);
+    println!("temp {:?}", temperature_values);
     let temperature_to_humidity = lines
         .take_while(|line| !line.is_empty())
         .skip(1)
         .map(Mapping::from_str)
         .collect::<Result<Vec<_>, _>>()?;
-    // println!("     {:?}", temperature_to_humidity);
+    println!("     {:?}", temperature_to_humidity);
 
     let mut humidity_values = vec![];
-    for temperature in temperature_values.iter() {
-        if let Some(mapping) = temperature_to_humidity
-            .iter()
-            .find(|mapping| mapping.source_overlaps(temperature))
-        {
+    for mapping in &temperature_to_humidity {
+        let mut new_temperatures = vec![];
+        for temperature in &temperature_values {
             let overlap = mapping.apply(temperature);
+
             match overlap {
-                Overlap::None(_) => unreachable!(),
-                Overlap::Contained(range) | Overlap::Complete(range) => humidity_values.push(range),
-                Overlap::Simple(left, right) => {
-                    humidity_values.push(left);
-                    humidity_values.push(right);
+                Overlap::None { rest } => {
+                    new_temperatures.push(rest);
                 }
-                Overlap::Overreaching(left, right, rest) => {
-                    humidity_values.push(left);
-                    humidity_values.push(right);
-                    humidity_values.push(rest);
+                Overlap::Simple { contained, rest } => {
+                    humidity_values.push(contained);
+                    new_temperatures.push(rest);
+                }
+                Overlap::Contained { contained } => humidity_values.push(contained),
+                Overlap::Complete { contained } => humidity_values.push(contained),
+                Overlap::Overreaching {
+                    left,
+                    contained,
+                    right,
+                } => {
+                    humidity_values.push(contained);
+                    new_temperatures.push(left);
+                    new_temperatures.push(right);
                 }
             }
-        } else {
-            humidity_values.push(temperature.clone());
         }
+        temperature_values = new_temperatures;
     }
+    humidity_values.extend_from_slice(&light_values);
 
-    // println!("hmdt {:?}", humidity_values);
+    println!("hmdt {:?}", humidity_values);
     let humidity_to_location = lines
         .take_while(|line| !line.is_empty())
         .skip(1)
         .map(Mapping::from_str)
         .collect::<Result<Vec<_>, _>>()?;
-    // println!("     {:?}", humidity_to_location);
+    println!("     {:?}", humidity_to_location);
 
     let mut location_values = vec![];
-    for humidity in humidity_values.iter() {
-        if let Some(mapping) = humidity_to_location
-            .iter()
-            .find(|mapping| mapping.source_overlaps(humidity))
-        {
+    for mapping in &humidity_to_location {
+        let mut new_humidities = vec![];
+        for humidity in &humidity_values {
             let overlap = mapping.apply(humidity);
+
             match overlap {
-                Overlap::None(_) => unreachable!(),
-                Overlap::Contained(range) | Overlap::Complete(range) => location_values.push(range),
-                Overlap::Simple(left, right) => {
-                    location_values.push(left);
-                    location_values.push(right);
+                Overlap::None { rest } => {
+                    new_humidities.push(rest);
                 }
-                Overlap::Overreaching(left, right, rest) => {
-                    location_values.push(left);
-                    location_values.push(right);
-                    location_values.push(rest);
+                Overlap::Simple { contained, rest } => {
+                    location_values.push(contained);
+                    new_humidities.push(rest);
+                }
+                Overlap::Contained { contained } => location_values.push(contained),
+                Overlap::Complete { contained } => location_values.push(contained),
+                Overlap::Overreaching {
+                    left,
+                    contained,
+                    right,
+                } => {
+                    location_values.push(contained);
+                    new_humidities.push(left);
+                    new_humidities.push(right);
                 }
             }
-        } else {
-            location_values.push(humidity.clone());
         }
+        humidity_values = new_humidities;
     }
+    location_values.extend_from_slice(&humidity_values);
+    println!("loct {:?}", location_values);
 
     Ok(location_values
         .iter()
@@ -426,7 +493,6 @@ mod tests {
     fn test_with_solution() {
         let solution = super::part_2(crate::INPUT).expect("Should run on real input");
 
-        assert!(solution < 54927065);
-        assert_eq!(solution, 0);
+        assert_eq!(solution, 15880236);
     }
 }
