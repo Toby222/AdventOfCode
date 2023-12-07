@@ -1,8 +1,8 @@
 [package]
 name = "advent-of-code"
-version = "23.6.1"
+version = "23.7.0"
 edition = "2021"
-default-run = "day06"
+default-run = "day07"
 
 [profile.release]
 strip = "symbols"
@@ -48,3 +48,7 @@ path = "src/day05/main.rs"
 [[bin]]
 name = "day06"
 path = "src/day06/main.rs"
+
+[[bin]]
+name = "day07"
+path = "src/day07/main.rs"
