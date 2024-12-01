@@ -1,7 +1,7 @@
 [package]
 authors = ["Toby <toby@tobot.dev>"]
 name = "advent-of-code-2024"
-version = "24.0.0"
+version = "24.2.0"
 edition = "2021"
 default-run = "get_input"
 
@@ -28,8 +28,16 @@ test = false
 [[bin]]
 name = "template"
 # day00 for alphabetic sorting
-path = "src/day00/main.rs"
+path = "day00/main.rs"
 test = false
+
+[[bin]]
+name = "day01"
+path = "day01/main.rs"
+
+[[bin]]
+name = "day02"
+path = "day02/main.rs"
 
 [dependencies]
 reqwest = { version = "0.12.9", features = ["blocking"] }

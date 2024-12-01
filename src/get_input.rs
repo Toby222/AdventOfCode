@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .header("Cookie", format!("session={session}"))
         .build()?;
     let input = client.execute(request)?.text()?;
-    fs::create_dir_all(format!("src/day{day:02}/"))?;
-    fs::write(format!("src/day{day:02}/input.txt"), input)?;
+    fs::create_dir_all(format!("day{day:02}/"))?;
+    fs::write(format!("day{day:02}/input.txt"), input)?;
     Ok(())
 }
