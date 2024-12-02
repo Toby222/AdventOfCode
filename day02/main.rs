@@ -33,11 +33,11 @@ fn is_safe(report: &Vec<i32>) -> bool {
     })
 }
 
-fn part_1(input: &Vec<Vec<i32>>) -> i32 {
-    input.iter().filter(|&report| is_safe(report)).count() as i32
+fn part_1(input: &Vec<Vec<i32>>) -> usize {
+    input.iter().filter(|&report| is_safe(report)).count()
 }
 
-fn part_2(input: &Vec<Vec<i32>>) -> i32 {
+fn part_2(input: &Vec<Vec<i32>>) -> usize {
     input
         .iter()
         .filter(|report| {
@@ -45,7 +45,7 @@ fn part_2(input: &Vec<Vec<i32>>) -> i32 {
                 .map(|i| [&report[..i], &report[i + 1..]].concat())
                 .any(|modified_report| is_safe(&modified_report))
         })
-        .count() as i32
+        .count()
 }
 
 #[cfg(test)]
