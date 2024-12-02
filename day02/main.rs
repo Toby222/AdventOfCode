@@ -24,7 +24,7 @@ pub fn main() {
 fn is_safe(report: &Vec<i32>) -> bool {
     let increasing = report[0] < report[1];
     report.array_windows::<2>().all(|window| {
-        let increase = window[1] as i32 - window[0] as i32;
+        let increase = window[1] - window[0];
         if increasing {
             1 <= increase && increase <= 3
         } else {
@@ -34,27 +34,18 @@ fn is_safe(report: &Vec<i32>) -> bool {
 }
 
 fn part_1(input: &Vec<Vec<i32>>) -> i32 {
-    let mut safe = 0;
-    for report in input {
-        if is_safe(report) {
-            safe += 1;
-        }
-    }
-    safe
+    input.iter().filter(|&report| is_safe(report)).count() as i32
 }
 
 fn part_2(input: &Vec<Vec<i32>>) -> i32 {
-    let mut safe = 0;
-    for report in input {
-        for i in 0..report.len() {
-            let modified_report = [&report[..i], &report[i + 1..]].concat();
-            if is_safe(&modified_report) {
-                safe += 1;
-                break;
-            }
-        }
-    }
-    safe
+    input
+        .iter()
+        .filter(|report| {
+            (0..report.len())
+                .map(|i| [&report[..i], &report[i + 1..]].concat())
+                .any(|modified_report| is_safe(&modified_report))
+        })
+        .count() as i32
 }
 
 #[cfg(test)]
