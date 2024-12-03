@@ -1,7 +1,7 @@
 [package]
 authors = ["Toby <toby@tobot.dev>"]
 name = "advent-of-code-2024"
-version = "24.2.2"
+version = "24.3.2"
 edition = "2021"
 default-run = "get_input"
 
@@ -39,6 +39,11 @@ path = "day01/main.rs"
 name = "day02"
 path = "day02/main.rs"
 
+[[bin]]
+name = "day03"
+path = "day03/main.rs"
+
 [dependencies]
+regex-lite = "0.1.6"
 reqwest = { version = "0.12.9", features = ["blocking"] }
 
